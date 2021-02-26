@@ -1,0 +1,108 @@
+---
+
+## Initial Installs
+- name: Installation HAproxy for Load Balancer on Ubuntu
+  hosts: LoadBalancer
+  become: yes
+  tasks:
+
+## Add Repo
+    - name: Add Repository to updates
+      apt_repository:
+        repo: 'ppa:vbernat/haproxy-2.2'
+        state: present
+
+## Install software
+    - name: Install Common Sofware Pack
+      apt:
+        name: software-properties-common
+        state: latest
+        install_recommends: no
+
+   # Install HAproxy
+    - name: Install HAproxy
+      apt:
+        name: haproxy
+        state: latest
+
+   # Install Python OpenSSL
+    - name: Install OpenSSL
+      apt:
+        name: python-openssl
+        state: latest
+
+   # Update server
+    - name: Run the equivalent of "apt-get update" as a separate step
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    # Upgrade server
+    - name: Run the equivalent of "apt-get upgrade" as a separate step
+      apt:
+        name: "*"
+        state: latest
+
+## SSL/TLS Encryption Certificate
+    - name: Make SSL Directory for Pem Concatenation
+      file:
+        path: /etc/haproxy/ssl
+        owner: root
+        group: root
+        mode: 0644
+        state: directory
+
+   # Private Key
+    - name: STEP 1 - Generate an OpenSSL Private Key (.key)
+      openssl_privatekey:
+        path: /etc/haproxy/ssl/seeddms.key
+        size: 2048
+        type: RSA
+        mode: 0400
+
+   # Certificate Signing Request (CSR)
+    - name: STEP 2 - Use Private Key to Create a Selfsigned (x509) Certificate Signing Request (.csr)
+      openssl_csr:
+        path: /etc/haproxy/seeddms.csr
+        privatekey_path: /etc/haproxy/ssl/seeddms.key
+        country_name: US
+        organization_name: Phoenix Cloud Services
+        email_address: none
+        common_name: LoadBalancer
+
+    # Self-Signed Certificate
+    - name: STEP 3 - Use Private Key (.key) and Certificate Signing Request (.csr) to Create a Self Signed Certificate (.crt)
+      openssl_certificate:
+        path: /etc/haproxy/ssl/seeddms.crt
+        privatekey_path: /etc/haproxy/ssl/seeddms.key
+        csr_path: /etc/haproxy/seeddms.csr
+        provider: selfsigned
+
+    # Concatenation for Pem file
+    - name: STEP 4 - Concatenate Certificate (.crt) and Private Key (.key) for Signed Permission (.pem)
+      assemble:
+        src: /etc/haproxy/ssl/
+        dest: /etc/haproxy/seeddms.pem
+        mode: 0400
+
+## Replace haproxy.cfg file
+    - name: Replace HAproxy.cfg file with predefined
+      file:
+        path: /etc/haproxy/haproxy.cfg
+        state: absent
+
+   # Copy HAproxy.cfg from Host
+    - name: Copy the host HAproxy.cfg file to new VM
+      copy:
+        src: /Users/jacobbrown/Project_Portfolio_5/Files/haproxy.cfg ### Change the Path!!!
+        dest: /etc/haproxy/haproxy.cfg
+
+## Start HAproxy and Enable on Start
+    - name: HAproxy and Enable it on Boot
+      service:
+        name: haproxy.service
+        state: started
+        enabled: yes
+
+    - name: Reboot for SELinux Disable
+      reboot:

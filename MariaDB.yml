@@ -1,0 +1,47 @@
+---
+
+## Initial Installs
+- name: Installation MariaDB on CentOS 8
+  hosts: MariaDB
+  become: yes
+  tasks:
+    - name: Install MariaDB
+      yum: name={{ item }} state=latest
+      loop:
+      - epel-release
+      - mariadb-server
+      - python3-PyMySQL
+
+    - name: System Update
+      raw: yum -y update && yum -y upgrade
+
+## Database Service
+    - name: MariaDB Start and Enable it on Boot
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    # Databases Create
+    - name: MariaDB Create Database
+      mysql_db:
+        name: seeddms
+        state: present
+
+    # Database User with rights
+    - name: SeedDMS Database with User
+      mysql_user:
+        login_user: root
+        name: seeddmsuser
+        password: Password11!!
+        priv: '*.*:ALL'
+        host: '%'
+
+## SELinux
+    - name: Disable SELinux
+      ansible.posix.selinux:
+        state: disabled
+
+    # Reboot for SELinux
+    - name: Reboot for SELinux Disable
+      reboot:

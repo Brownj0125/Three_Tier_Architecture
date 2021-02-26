@@ -1,0 +1,113 @@
+---
+
+## Initial Installs
+- name: Installation LAP Stack with SeedDMS on CentOS 8
+  hosts: SeedDMS
+  become: yes
+  tasks:
+    - name: Install Apache and PHP
+      yum: name={{ item }} state=latest
+      loop:
+      - epel-release
+      - php
+      - php-pear
+      - httpd
+      - php-gd
+      - php-mbstring
+      - php-fpm
+      - php-json
+      - php-mysqlnd
+      - python3-PyMySQL
+
+    - name: System Update
+      raw: yum -y update && yum -y upgrade
+
+## Apache Services
+    - name: Apache Start and Enabled it on Boot
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+## SeedDMS Install Start
+    - name: Create Download Folder
+      file:
+        path: /var/www/DeleteMe
+        state: directory
+        mode: '0755'
+
+    # SeedDMS Download
+    - name: Download SeedDMS
+      get_url:
+        url: https://sourceforge.net/projects/seeddms/files/seeddms-5.1.21/seeddms-quickstart-5.1.21.tar.gz
+        dest: /var/www/DeleteMe/seeddms-quickstart-5.1.21.tar.gz
+        validate_certs: no
+
+    # SeedDMS Extract
+    - name: Extract SeedDMS
+      unarchive:
+        src: /var/www/DeleteMe/seeddms-quickstart-5.1.21.tar.gz
+        dest: /var/www/DeleteMe
+        remote_src: yes
+
+    # Move Program Files
+    - name: Move Extracted SeedDMS Pacage to HTML
+      raw: mv /var/www/DeleteMe/seeddms51x/* /var/www/html/
+
+    # Remove Settings Files
+    - name: Remove SeedDMS Config "settings.xml"
+      file:
+        path: /var/www/html/conf/settings.xml
+        state: absent
+
+    # Create File For DB Initialization
+    - name: Create SeedDMS Conf "ENABLE_INSTALL_TOOL"
+      file:
+        path: /var/www/html/conf/ENABLE_INSTALL_TOOL
+        state: touch
+
+    # Replace Settings File from Host Computer
+    - name: Copy the "settings.xml" file to new VM
+      copy:
+        src: /Users/jacobbrown/Project_Portfolio_5/Files/settings.xml ### Change the Path!!
+        dest: /var/www/html/conf/settings.xml
+
+## Apache Conf Directory Owner:Group
+    - name: Change Owner and Group of Config Files.
+      file:
+        path: /var/www/html/conf
+        state: directory
+        recurse: yes
+        owner: apache
+        group: apache
+
+## Apache Data Directory Owner:Group
+    - name: Change Owner and Group of Data Files.
+      file:
+        path: /var/www/html/data
+        state: directory
+        recurse: yes
+        owner: apache
+        group: apache
+
+## SeedDMS Download Cleanup
+    - name: Remove SeedDMS Download Tar File
+      file:
+        path: /var/www/DeleteMe
+        state: absent
+
+## Apache httpd.conf DocumentRoot File Modification
+    - name: Change Apache's Document Root for Public IP Auto Load
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^DocumentRoot "/var/www/html"'
+        line: DocumentRoot "/var/www/html/seeddms/"
+
+## SELinux
+    - name: Disable SELinux
+      ansible.posix.selinux:
+        state: disabled
+
+    # Reboot for SELinux
+    - name: Reboot for SELinux Disable
+      reboot:

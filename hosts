@@ -1,0 +1,22 @@
+[MariaDB]       # CentOS_8
+52.152.227.209
+
+[MariaDB:vars]
+ansible_user = azureuser
+ansible_ssh_private_key_file = ~/Azure_Pem/Seeddms_key.pem
+
+[SeedDMS]       # CentOS_8
+52.150.11.248
+52.249.248.221
+20.185.195.193
+
+[SeedDMS:vars]
+ansible_user = azureuser
+ansible_ssh_private_key_file = ~/Azure_Pem/Seeddms_key.pem
+
+[LoadBalancer]  # Ubuntu
+52.186.146.242
+
+[LoadBalancer:vars]
+ansible_user = azureuser
+ansible_ssh_private_key_file = ~/Azure_Pem/Seeddms_key.pem

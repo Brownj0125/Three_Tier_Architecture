@@ -1,0 +1,12 @@
+---
+
+- name: SeedDMS Cleanup
+  hosts: SeedDMS
+  become: yes
+  tasks:
+
+    # Create File For DB Initialization
+    - name: Create SeedDMS Conf "ENABLE_INSTALL_TOOL"
+      file:
+        path: /var/www/html/conf/ENABLE_INSTALL_TOOL
+        state: absent
