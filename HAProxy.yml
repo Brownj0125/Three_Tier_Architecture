@@ -4,6 +4,14 @@
 - name: Installation HAproxy for Load Balancer on Ubuntu
   hosts: LoadBalancer
   become: yes
+
+  vars:
+    country_name: US
+    organization_name: My Company
+    email_address: none
+    common_name: LoadBalancer
+    local_project_path: /Users/username
+
   tasks:
 
 ## Add Repo
@@ -65,10 +73,10 @@
       openssl_csr:
         path: /etc/haproxy/seeddms.csr
         privatekey_path: /etc/haproxy/ssl/seeddms.key
-        country_name: US
-        organization_name: Phoenix Cloud Services
-        email_address: none
-        common_name: LoadBalancer
+        country_name: {{country_name}}
+        organization_name: {{organization_name}}
+        email_address: {{email_address}}
+        common_name: {{common_name}}
 
     # Self-Signed Certificate
     - name: STEP 3 - Use Private Key (.key) and Certificate Signing Request (.csr) to Create a Self Signed Certificate (.crt)
@@ -94,7 +102,7 @@
    # Copy HAproxy.cfg from Host
     - name: Copy the host HAproxy.cfg file to new VM
       copy:
-        src: /Users/jacobbrown/Project_Portfolio_5/Files/haproxy.cfg ### Change the Path!!!
+        src: {{local_project_path}}/Project_Portfolio_5/Files/haproxy.cfg
         dest: /etc/haproxy/haproxy.cfg
 
 ## Start HAproxy and Enable on Start
@@ -104,5 +112,5 @@
         state: started
         enabled: yes
 
-    - name: Reboot for SELinux Disable
+    - name: Reboot
       reboot:

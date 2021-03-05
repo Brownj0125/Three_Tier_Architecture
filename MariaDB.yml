@@ -4,6 +4,13 @@
 - name: Installation MariaDB on CentOS 8
   hosts: MariaDB
   become: yes
+
+  vars:
+    DB_table_name: seeddms
+    DB_username: seeddmsuser
+    DB_password: Password11!!
+
+
   tasks:
     - name: Install MariaDB
       yum: name={{ item }} state=latest
@@ -25,15 +32,15 @@
     # Databases Create
     - name: MariaDB Create Database
       mysql_db:
-        name: seeddms
+        name: {{DB_table_name}}
         state: present
 
     # Database User with rights
     - name: SeedDMS Database with User
       mysql_user:
         login_user: root
-        name: seeddmsuser
-        password: Password11!!
+        name: {{DB_username}}
+        password: {{DB_password}}
         priv: '*.*:ALL'
         host: '%'
 
