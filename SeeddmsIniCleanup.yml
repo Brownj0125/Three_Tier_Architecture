@@ -6,7 +6,7 @@
   tasks:
 
     # Create File For DB Initialization
-    - name: Create SeedDMS Conf "ENABLE_INSTALL_TOOL"
+    - name: Remove SeedDMS Conf "ENABLE_INSTALL_TOOL"
       file:
         path: /var/www/html/conf/ENABLE_INSTALL_TOOL
         state: absent

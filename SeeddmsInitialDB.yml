@@ -4,6 +4,10 @@
 - name: Installation LAP Stack with SeedDMS on CentOS 8
   hosts: SeedDMS
   become: yes
+
+  vars:
+    local_project_path: /Users/username
+
   tasks:
     - name: Install Apache and PHP
       yum: name={{ item }} state=latest
@@ -69,7 +73,7 @@
     # Replace Settings File from Host Computer
     - name: Copy the "settings.xml" file to new VM
       copy:
-        src: /Users/jacobbrown/Project_Portfolio_5/Files/settings.xml ### Change the Path!!
+        src: {{local_project_path}}/Project_Portfolio_5/Files/settings.xml
         dest: /var/www/html/conf/settings.xml
 
 ## Apache Conf Directory Owner:Group
