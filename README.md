@@ -5,13 +5,16 @@ These files are for class projects and not for production use.
 
 Any IPs, usernames, passwords, keys, and secrets found are fake and for demonstration/class purposes only.
 
-This is a three tier architecture
+This course is about setting up a three tier architecture
 
-Tier 1 MariaDB
-Tier 2 SeedDMS
-Tier 3 Load Balancer
+Tier 1 CentOS - MariaDB: SQL
+Tier 2 CentOS - SeedDMS: Web App
+Tier 3 Ubuntu - HAProxy: Load Balancer
 
 --- Order of Events ----
+Install Ansible on host.
+Create VM and all dependencies add a public-ip.
+Clone repository to Ansible host.
 UPDATE hosts file with public ip addresses of instances.
 MariaDB.yml - Database must be first.
 EDIT File/settings.xml - Line 101:  Change dbHostname IP, dbDatabase name, dbUser name, and dbPass password to reflect the database configurations.
